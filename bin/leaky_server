@@ -3,6 +3,7 @@
 import time
 import argparse
 import signal
+import logging
 
 from leaky_diode import LeakyServer
 
@@ -29,12 +30,21 @@ if __name__ == '__main__':
     
     parser.add_argument('host', metavar='host', type=str, help='Remore host address')
     parser.add_argument('port', metavar='port', type=int, help='Remote host port')
-    parser.add_argument('secret', metavar='string', 
+    parser.add_argument('secret', metavar='secret_string', 
         default='a secret string',
         help="Attack mode 'flow' or 'close' (default: %(default)s)"
+    )    
+    parser.add_argument('--verbose', '-v',
+	dest='verbose',
+	action='store_true',
+	help='Show debugging messages'
     )
-    
+
     args = parser.parse_args()
+    
+    # Change logging level in verbose mode.
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
     
     # Listening address and port
     server = LeakyServer(
