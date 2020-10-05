@@ -5,6 +5,14 @@ are vulnerable to **flow modulation** and/or **close delay** attacks described
 in this blog post. Of course this only applies to data diodes that support TCP
 connections.
 
+- **CLOSE DELAY** attack uses the delay between the request of one the secret bits and
+the time the server closes the connection to encode the bit value. (i.e.- 10 seconds
+delay means a 0, 30 seconds delay a 1)
+
+- **FLOW MODULATION** attack uses tcp flow control mechanism to encode secret bits as
+a transfer speed. For example if the the bit requested by the client is 1 the server
+throttles the speed to 300KB/s, if it's 0 to 64KB/s
+
 
 ## Installation
 
