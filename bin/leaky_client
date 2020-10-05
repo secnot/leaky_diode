@@ -3,6 +3,7 @@
 import time
 import argparse
 import sys
+import logging
 
 from leaky_diode import LeakyClient, LeakyAttackMode
 
@@ -28,11 +29,11 @@ if __name__ == '__main__':
 
     # CLOSE MODE OPTIONS
     parser.add_argument('--low_delay', metavar='delay', type=int,
-        default=10, # 10 seconds
+        default=5, # seconds
         help="""Close delay for low bits (default: %(default)ss) (only Close Mode)"""
     )
     parser.add_argument('--high_delay', metavar='delay', type=int,
-        default=30, # 30 seconds
+        default=10, # seconds
         help="""Close delay for high bits (default: %(default)ss) (only Close Mode)"""
     )
 
@@ -49,11 +50,11 @@ if __name__ == '__main__':
     )
   
     parser.add_argument('--sample_time', metavar='time', type=float,
-        default=4.0,
+        default=3.0,
         help="Tx rate sampling interval (default: %(default)ss) (only Flow Mode)"
     )
     parser.add_argument('--settle_time', metavar='time', type=float,
-        default=10.0,
+        default=8.0,
         help="""Settle time between sending a bit request and the start of sampling 
         (default: %(default)ss) (only Flow Mode)"""
     )
@@ -63,6 +64,11 @@ if __name__ == '__main__':
         dest='partial',
         action='store_true',
         help="Show partial results each time another byte from the secret is received"
+    )
+    parser.add_argument('--verbose', '-v',
+	dest='verbose',
+	action='store_true',
+	help='Show debugging messages'
     )
 
     args = parser.parse_args()
@@ -97,7 +103,11 @@ if __name__ == '__main__':
 
     if args.sample_time < 0:
         parse.error("sample time must be greater than 0")
-    
+   
+    # Change logging level in verbose mode.
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+
     # Listening address and port
     if args.mode == 'flow':
         client = LeakyClient(
