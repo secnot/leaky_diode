@@ -1,11 +1,9 @@
 import multiprocessing as mp
 import threading
 import socket
-import logging
 import time
 from .message import *
-
-logger = mp.log_to_stderr(logging.INFO)
+from .logger import logger
 
 
 
@@ -283,10 +281,17 @@ class LeakyWorkerProcess(mp.Process):
 
 
 class LeakyServer:
-    """ """
+    """Leaky Diode protocol server"""
 
     def __init__(self, host, port, secret, ticks=100, max_connections=10):
-        """ """
+        """ 
+	Parameters:
+            host (str): address of the interface to listen for
+            port (int): Listen port
+            secret (bytes): Secret byte string to leak (max length 65535)
+            ticks (int): Number of ticks per second used to throttle speed.
+            max_connections (int): Max concurrent connection
+	"""
         super().__init__()
         self.host = host
         self.port = port
