@@ -1,18 +1,18 @@
 # Leaky Diodes
 
-Leaky diode is a data exfiltrarion test tool for data diodes, to determine if they
-are vulnerable to **flow modulation** and/or **close delay** attacks described
-in this blog post. Of course this only applies to data diodes that support TCP
-connections.
+Leaky diode is a data exfiltration test tool for *smart* data diodes, that is 
+data diodes with support for TCP pass-through with the help of some side channel
+from the isolated side. The attacks used are **flow modulation** and/or 
+**close delay**:
 
-- **CLOSE DELAY** attack uses the delay between the request of one the secret bits and
+- **CLOSE DELAY** uses the delay between the request of one the secret's bits and
 the time the server closes the connection to encode the bit value. (i.e.- 10 seconds
 delay means a 0, 30 seconds delay a 1)
 
-- **FLOW MODULATION** attack uses tcp flow control mechanism to encode secret bits as
+- **FLOW MODULATION** uses tcp flow control mechanism to encode secret's bits as
 a transfer speed. For example if the the bit requested by the client is 1 the server
-throttles the speed to 300KB/s, if it's 0 to 64KB/s. The advantage of this attack is
-that using a single connection makes it much harder to detect.
+throttles the speed to 300KB/s, if it's 0 to 100KB/s. The advantage of this attack is
+that using a single connection makes it harder to detect.
 
 
 ## Installation
@@ -37,8 +37,7 @@ On the isolated side launch the server:
 leaky_server public_ip port 'secret string that needs leaking'
 ```
 
-On the untrusted side launch the client and select one of the attacks available,
-and enable partial results.
+On the untrusted side launch the client and select one of the attacks,
 
 ```bash
 leaky_client server_ip server_port --mode flow --partial
@@ -50,8 +49,8 @@ or
 leaky_client server_ip server_port --mode close --partial
 ```
 
-And wait seven minutes to receive the first byte (it's the slowest), and one and 
-a half minutes for each one after that.
+And just wait a few minutes to receive the first byte (it's the slowest), if you're not sure
+if it's working add --verbose option so it prints messages on each received bit.
  
 
 ## Options
@@ -74,9 +73,9 @@ optional arguments:
   --high_delay delay    Close delay for high bits (default: 10s) (only Close Mode)
   --low_rate rate       Tx rate for low bits (default: 64 KB/s) (only Flow Mode)
   --high_rate rate      Tx rate for high bits (default: 300 KB/s) (only Flow Mode)
-  --sample_time time    Tx rate sampling interval (default: 4.0s) (only Flow Mode)
+  --sample_time time    Tx rate sampling interval (default: 3.0s) (only Flow Mode)
   --settle_time time    Settle time between sending a bit request and the start of 
-                        sampling (default: 10.0s) (only Flow Mode)
+                        sampling (default: 8.0s) (only Flow Mode)
   --partial             Show partial results each time another byte from the secret is received
   --verbose             Show debugging messages
 ```
@@ -98,21 +97,20 @@ optional arguments:
 
 ## Performance
 
-The attack throughput with the default parameters is around 1 B/min (yes one byte per minute),
+The attack throughput with the default parameters is around 1 B/min (yes, one byte per minute),
 you can increase it by lowering the delay times in **close delay** mode, and the settle/sample
 times in **flow modulation** (the default values are very conservative)
 
 An actual exfiltration attempt using this attack could easily leak a few KB per day, too slow
-for large breachs, but enough for targeted attacks for keys/passwords or selected users.
+for large breachs, but enough for targeted attacks for keys/passwords or selected users data.
 
 
 ## API
 
-It is also possible to use leaky_diode as a package and include a leaky server in your own app:
+It is also possible to use leaky_diode as a package and include a server in your own app:
 
 
 * class LeakyServer(host, port, secret, ticks=100, max_connections=10)
-	Launch leaky
 
 	* host: (str) Listen interface ip addres ('' for all)
 	* port: (int) Listen port
@@ -147,3 +145,10 @@ leaky_server.close()
 - Add CRC to the secret and secret length, or even better error correction. 
 - Add resume capability so there is no need to get the secret in one go.
 - Add some tests.
+
+
+## References
+
+- Data Diodes [Wikipedia](https://en.wikipedia.org/wiki/Unidirectional_network)
+- Place holder so I remember to publish a post on the attacks
+- And another on transport and streaming protocols for data diodes
