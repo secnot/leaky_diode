@@ -2,15 +2,14 @@ import socket
 import multiprocessing as mp
 import time
 import os
-import logging
 import queue
-
-from .message import *
 
 from functools import reduce
 from operator import or_
 
-#logger = mp.log_to_stderr(logging.DEBUG)
+from .message import *
+from .logger import logger
+
 
 class ExitSignal(Exception):
     """Process received close signal"""
@@ -80,8 +79,8 @@ class LeakyFlowProc(mp.Process):
         self.port = port
         self.low  = low
         self.high = high
-        self.settle_time = 10.0
-        self.sample_time = 4.0
+        self.settle_time = settle_time
+        self.sample_time = sample_time
 
         # When sampling rates above this one are considered high, below are low
         self.limit_rate = self.low + (self.high-self.low)/2
@@ -142,8 +141,11 @@ class LeakyFlowProc(mp.Process):
             length_msg = LeakySecretLengthMessage(bit)
             sock.sendall(length_msg.to_bytes())
             bits.append(self.sample_speed(sock))
+            logger.debug("Secret Length {}: {}".format(bit, bits[-1]))
 
-        return reconstruct_byte(bits)
+        length = reconstruct_byte(bits)
+        logger.debug("Secret Length {}".format(length))
+        return length
 
 
     def get_secret_byte(self, sock, index):
@@ -159,6 +161,7 @@ class LeakyFlowProc(mp.Process):
             secret_msg = LeakySecretMessage(index, bit)
             sock.sendall(secret_msg.to_bytes())
             bits.append(self.sample_speed(sock))
+            logger.debug("Secret {}.{}: {}".format(index, bit, bits[-1]))
 
         return bytes([reconstruct_byte(bits)])
 
@@ -318,8 +321,11 @@ class LeakyCloseProc(mp.Process):
         for bit in range(16):
             length_msg = LeakySecretLengthMessage(bit)
             bits.append(self.time_close_delay(length_msg))
-        
-        return reconstruct_byte(bits)
+            logger.debug("Secret Legth {}: {}".format(bit, bits[-1]))
+            
+        length = reconstruct_byte(bits)
+        logger.debug("Secret Length {}".format(length))
+        return length
 
 
     def get_secret_byte(self, index):
@@ -333,7 +339,8 @@ class LeakyCloseProc(mp.Process):
         for bit in range(8):
             secret_msg = LeakySecretMessage(index, bit)
             bits.append(self.time_close_delay(secret_msg))
-
+            logger.debug("Secret {}.{}: {}".format(index, bit, bits[-1]))
+        
         return bytes([reconstruct_byte(bits)])
 
 
