@@ -22,28 +22,34 @@ pip install leaky_diode
 
 ## Usage
 
-On the isolated side launch the server with the secret:
+On the isolated side launch the server:
 
 ```bash
 leaky_server public_ip port 'secret string that needs leaking'
 ```
 
-On the untrusted side launch the client and select one of the attack available
+On the untrusted side launch the client and select one of the attacks available,
+and enable partial results.
 
 ```bash
-leaky_client server_ip server_port -mode flow
+leaky_client server_ip server_port --mode flow --partial
 ```
 
 or
 
 ```bash
-leaky_client server_ip server_port -mode close --partial
+leaky_client server_ip server_port --mode close --partial
 ```
+
+And wait seven minutes to receive the first byte (it's the slowest), and one and 
+a half minutes for each one after that.
+ 
 
 ## Options
 
 ```bash
-usage: leaky_client [-h] [--mode mode] [--low_delay delay] [--high_delay delay] [--low_rate rate] [--high_rate rate] [--sample_time time] [--settle_time time] [--partial]
+usage: leaky_client [-h] [--mode mode] [--low_delay delay] [--high_delay delay] [--low_rate rate] 
+					[--high_rate rate] [--sample_time time] [--settle_time time] [--partial]
                     host port
 
 Leaky Diode is a data exfiltration test tool for data diodes
@@ -62,6 +68,20 @@ optional arguments:
   --sample_time time    Tx rate sampling interval (default: 4.0s) (only Flow Mode)
   --settle_time time    Settle time between sending a bit request and the start of sampling (default: 10.0s) (only Flow Mode)
   --partial             Show partial results each time another byte from the secret is received
+```
+
+```bash
+usage: leaky_server [-h] host port secret_string
+
+Leaky Diode is a data exfiltration test tool for data diodes
+
+positional arguments:
+  host           Remore host address
+  port           Remote host port
+  secret_string  Attack mode 'flow' or 'close' (default: a secret string)
+
+optional arguments:
+  -h, --help     show this help message and exit
 ```
 
 ## Performance
