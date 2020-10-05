@@ -1,7 +1,7 @@
 from setuptools import setup
 
 long_description = """Leaky Diode is a data exfiltration test tool for data diodes,
-    it uses flow modulation and close delay attacks"""
+    using flow modulation and close delay attacks"""
 
 
 setup(
@@ -21,7 +21,7 @@ setup(
     # App information
     keywords = ['data diode', 'diode', 'cybersecurity', 'security', 'hack', 'hacking',
         'data', 'leak', 'exfiltration', 'data exfiltration', 'flow modulation', 
-        'close delay', 'attack'],
+        'close delay', 'attack', 'pentesting', 'penetration testing'],
 
     Classifiers = [
         'License :: OSI Approved :: GNU Affero General Public License v3',
