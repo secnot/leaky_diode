@@ -26,13 +26,13 @@ python3 setup.py install
 or use pypi:
 
 ```bash
-pip install leaky_diode --user
+pip3 install leaky_diode --user
 ```
 
 or
 
 ```bash
-sudo pip install leaky_diode
+sudo pip3 install leaky_diode
 ```
 
 the path to the scripts if not installed as root will be:
