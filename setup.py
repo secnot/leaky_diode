@@ -1,19 +1,28 @@
 from setuptools import setup
+import pathlib
 
-long_description = """Leaky Diode is a data exfiltration test tool for data diodes,
+
+# Extract README as the long description
+HOME_PATH = pathlib.Path(__file__).parent
+README = (HOME_PATH/"README.md").read_text()
+
+short_description = """Leaky Diode is a data exfiltration test tool for data diodes,
     using flow modulation and close delay attacks"""
 
 
 setup(
     name="leaky_diode",
     version="0.1",
-    description=long_description,
+    description=short_description,
+    long_description=README,
+    long_description_content_type="text/markdown",
 
     # Homepage
     url='https://github.com/secnot/leaky_diode',
 
     # Author details
     author='SecNot',
+    author_email='secnot@secnot.com',
 
     # License
     license = 'AGPLv3',
