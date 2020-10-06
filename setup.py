@@ -12,7 +12,7 @@ short_description = """Leaky Diode is a data exfiltration test tool for data dio
 
 setup(
     name="leaky_diode",
-    version="0.1",
+    version="0.1.1",
     description=short_description,
     long_description=README,
     long_description_content_type="text/markdown",
@@ -48,6 +48,7 @@ setup(
         "bin/leaky_server",
         "bin/leaky_client"
     ],
+    install_requires=['pathlib'],
 
     zip_safe = True,
 )
